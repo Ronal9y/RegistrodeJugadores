@@ -21,7 +21,7 @@ import edu.ucne.registrodejugadores.ui.theme.util.Routes
 @Composable
 fun SeleccionJugadoresScreen(
     onJugadoresSeleccionados: (jugadorX: Jugador, jugadorO: Jugador) -> Unit,
-    onNavigate: (String) -> Unit,  // PARÁMETRO CORRECTO
+    onNavigate: (String) -> Unit,
     viewModel: JugadorListViewModel = hiltViewModel()
 ) {
     val jugadores by viewModel.jugadores.collectAsState(emptyList())
@@ -40,7 +40,6 @@ fun SeleccionJugadoresScreen(
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        // Selección para Jugador X
         Text("Jugador X (❌):", fontWeight = FontWeight.Bold)
         LazyColumn(modifier = Modifier.height(150.dp)) {
             items(jugadores) { jugador ->
@@ -54,7 +53,6 @@ fun SeleccionJugadoresScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Selección para Jugador O
         Text("Jugador O (⭕):", fontWeight = FontWeight.Bold)
         LazyColumn(modifier = Modifier.height(150.dp)) {
             items(jugadores) { jugador ->
@@ -73,7 +71,7 @@ fun SeleccionJugadoresScreen(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Button(
-                onClick = { onNavigate(Routes.JUGADOR_LIST) }  // Botón para volver
+                onClick = { onNavigate(Routes.JUGADOR_LIST) }
             ) {
                 Text("Volver")
             }

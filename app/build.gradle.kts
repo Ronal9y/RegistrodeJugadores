@@ -5,6 +5,7 @@ plugins {
     id("com.google.devtools.ksp")
     kotlin("plugin.serialization")
     id("com.google.dagger.hilt.android")
+    id ("kotlin-parcelize")
 }
 
 android {
