@@ -1,5 +1,6 @@
 package edu.ucne.registrodejugadores.ui.theme.screen.Juego
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -33,11 +34,12 @@ class GameViewModel @Inject constructor(
                 val jugador = repository.getJugadorById(jugadorId)
                 if (jugador != null) {
                     repository.incrementarPartidas(jugadorId)
+                    Log.d("GameViewModel", "Partidas incrementadas para jugador ID: $jugadorId")
                 } else {
-                    println("Jugador con ID $jugadorId no encontrado. No se incrementarán partidas.")
+                    Log.w("GameViewModel", "Jugador con ID $jugadorId no encontrado. No se incrementarán partidas.")
                 }
             } catch (e: Exception) {
-                println("Error al incrementar partidas: ${e.message}")
+                Log.e("GameViewModel", "Error al incrementar partidas para jugador ID: $jugadorId", e)
             }
         }
     }
@@ -52,7 +54,6 @@ class GameViewModel @Inject constructor(
 
                     val hasWon = checkWin(newBoard, currentState.currentPlayer)
                     val isDraw = !hasWon && newBoard.all { it != null }
-
 
                     lastPlayer = currentState.currentPlayer
 
@@ -72,8 +73,10 @@ class GameViewModel @Inject constructor(
                             Player.O -> newState.copy(oScore = newState.oScore + 1)
                             else -> newState
                         }
+                        Log.i("GameViewModel", "¡Jugador ${currentState.currentPlayer} ha ganado!")
                     } else if (isDraw) {
                         _state.value = newState.copy(drawScore = newState.drawScore + 1)
+                        Log.i("GameViewModel", "¡Empate!")
                     }
                 }
             }
@@ -84,6 +87,7 @@ class GameViewModel @Inject constructor(
                     oScore = currentState.oScore,
                     drawScore = currentState.drawScore
                 )
+                Log.d("GameViewModel", "Juego reiniciado")
             }
         }
     }
@@ -157,13 +161,16 @@ data class GameState(
         return result
     }
 }
+
 enum class Player {
     X, O
 }
+
 sealed class GameAction {
     data class BoardTapped(val cell: Int) : GameAction()
     object PlayAgain : GameAction()
 }
+
 enum class WinLine {
     Horizontal1, Horizontal2, Horizontal3,
     Vertical1, Vertical2, Vertical3,
