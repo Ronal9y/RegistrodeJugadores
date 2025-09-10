@@ -1,13 +1,16 @@
 package edu.ucne.registrodejugadores
 
+import android.R.attr.type
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.Text
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import dagger.hilt.android.AndroidEntryPoint
 import edu.ucne.registrodejugadores.domain.model.Jugador
 import edu.ucne.registrodejugadores.ui.screen.juego.SeleccionJugadoresScreen
@@ -51,9 +54,8 @@ class MainActivity : ComponentActivity() {
                     composable(Routes.SELECCION_JUGADORES) {
                         SeleccionJugadoresScreen(
                             onJugadoresSeleccionados = { jugadorX, jugadorO ->
-                                navController.currentBackStackEntry?.savedStateHandle?.set("jugadorX", jugadorX)
-                                navController.currentBackStackEntry?.savedStateHandle?.set("jugadorO", jugadorO)
-                                navController.navigate(Routes.GAME_SCREEN)
+
+                                navController.navigate("${Routes.GAME_SCREEN}?jugadorXId=${jugadorX.id}&jugadorOId=${jugadorO.id}")
                             },
                             onNavigate = { route ->
                                 if (route == Routes.JUGADOR_LIST) {
@@ -63,20 +65,22 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    composable(Routes.GAME_SCREEN) { backStackEntry ->
-                        val jugadorX = backStackEntry.savedStateHandle?.get<Jugador>("jugadorX")
-                        val jugadorO = backStackEntry.savedStateHandle?.get<Jugador>("jugadorO")
+                    composable(
+                        route = "${Routes.GAME_SCREEN}?jugadorXId={jugadorXId}&jugadorOId={jugadorOId}",
+                        arguments = listOf(
+                            navArgument("jugadorXId") { type = NavType.IntType },
+                            navArgument("jugadorOId") { type = NavType.IntType }
+                        )
+                    ) { backStackEntry ->
+                        val jugadorXId = backStackEntry.arguments?.getInt("jugadorXId")
+                        val jugadorOId = backStackEntry.arguments?.getInt("jugadorOId")
 
-                        if (jugadorX != null && jugadorO != null) {
-                            GameScreen(
-                                jugadorX = jugadorX,
-                                jugadorO = jugadorO,
-                                onPartidaTerminada = { navController.popBackStack() },
-                                onExitGame = { navController.popBackStack() }
-                            )
-                        } else {
-                            Text("Error: no se seleccionaron jugadores")
-                        }
+                        GameScreen(
+                            jugadorXId = jugadorXId,
+                            jugadorOId = jugadorOId,
+                            onPartidaTerminada = { navController.popBackStack() },
+                            onExitGame = { navController.popBackStack() }
+                        )
                     }
                 }
             }
