@@ -44,17 +44,20 @@ class JugadorListViewModel @Inject constructor(
                 _uiEvent.value = UiEvent.NavigateTo("jugador_form")
             }
             is JugadorListEvent.OnSelectJugador -> {
-                // Lógica para seleccionar jugador para el juego
                 _uiEvent.value = UiEvent.ShowMessage("Jugador seleccionado: ${event.jugador.nombres}")
             }
         }
+    }
+
+    fun consumeUiEvent() {
+        _uiEvent.value = null
     }
 
     private fun deleteJugador(jugador: Jugador) {
         viewModelScope.launch {
             try {
                 repository.deleteJugador(jugador)
-                _uiEvent.value = UiEvent.ShowMessage("Jugador eliminado")
+                _uiEvent.value = UiEvent.ShowMessage("Jugador eliminado exitosamente")
             } catch (e: Exception) {
                 _uiEvent.value = UiEvent.ShowMessage("Error al eliminar jugador: ${e.message}")
             }
