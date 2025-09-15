@@ -16,6 +16,7 @@ import edu.ucne.registrodejugadores.domain.model.Jugador
 import edu.ucne.registrodejugadores.ui.screen.juego.SeleccionJugadoresScreen
 import edu.ucne.registrodejugadores.ui.screen.jugador_form.JugadorFormScreen
 import edu.ucne.registrodejugadores.ui.screen.jugador_list.JugadorListScreen
+import edu.ucne.registrodejugadores.ui.screen.partidas_screen.PartidasScreen
 import edu.ucne.registrodejugadores.ui.theme.RegistrodeJugadoresTheme
 import edu.ucne.registrodejugadores.ui.theme.screen.Juego.GameScreen
 import edu.ucne.registrodejugadores.ui.theme.util.Routes
@@ -31,7 +32,7 @@ class MainActivity : ComponentActivity() {
             RegistrodeJugadoresTheme {
                 NavHost(
                     navController = navController,
-                    startDestination = Routes.JUGADOR_FORM
+                    startDestination = Routes.PARTIDAS_SCREEN
                 ) {
                     composable(Routes.JUGADOR_FORM) {
                         JugadorFormScreen(
@@ -81,6 +82,10 @@ class MainActivity : ComponentActivity() {
                             onPartidaTerminada = { navController.popBackStack() },
                             onExitGame = { navController.popBackStack() }
                         )
+                    }
+
+                    composable(Routes.PARTIDAS_SCREEN) {
+                        PartidasScreen()
                     }
                 }
             }
