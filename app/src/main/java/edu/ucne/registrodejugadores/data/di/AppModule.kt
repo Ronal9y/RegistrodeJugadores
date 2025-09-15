@@ -29,7 +29,7 @@ object AppModule {
             Jugadores::class.java,
             "jugadoresDb"
         )
-            .fallbackToDestructiveMigration() // ✅ Importante para cambios de versión
+            .fallbackToDestructiveMigration()
             .build()
     }
 
