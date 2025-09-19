@@ -11,15 +11,13 @@ data class Partida(
     val jugador1Id: Int = 0,
     val jugador2Id: Int = 0,
     val ganadorId: Int = 0,
-    val esFinalizada: Boolean
+    val esFinalizada: Boolean,
+    val board: String = "null,null,null,null,null,null,null,null,null"
 ) : Parcelable {
     companion object {
         fun getFechaActual(): String {
-            val calendar = Calendar.getInstance()
-            val dia = calendar.get(Calendar.DAY_OF_MONTH)
-            val mes = calendar.get(Calendar.MONTH) + 1
-            val anio = calendar.get(Calendar.YEAR)
-            return "$dia/$mes/$anio"
+            val sdf = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault())
+            return sdf.format(java.util.Date())
         }
     }
 }
