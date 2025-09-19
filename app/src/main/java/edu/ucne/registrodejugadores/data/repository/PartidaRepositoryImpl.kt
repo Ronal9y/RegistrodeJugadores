@@ -18,8 +18,9 @@ class PartidaRepositoryImpl @Inject constructor(
     override suspend fun getPartidaById(id: Int): Partida? =
         dao.getPartidaById(id)?.toDomain()
 
-    override suspend fun insertPartida(partida: Partida) =
-        dao.insert(partida.toEntity())
+    override suspend fun insertPartida(partida: Partida): Long {
+        return dao.insert(partida.toEntity())
+    }
 
     override suspend fun updatePartida(partida: Partida) =
         dao.update(partida.toEntity())
@@ -28,11 +29,11 @@ class PartidaRepositoryImpl @Inject constructor(
         dao.delete(partida.toEntity())
 
     private fun PartidaEntity.toDomain() = Partida(
-        partidaId, fecha, jugador1Id, jugador2Id, ganadorId, esFinalizada
+        partidaId, fecha, jugador1Id, jugador2Id, ganadorId, esFinalizada, board
     )
 
     private fun Partida.toEntity() = PartidaEntity(
-        partidaId, fecha, jugador1Id, jugador2Id, ganadorId, esFinalizada
+        partidaId, fecha, jugador1Id, jugador2Id, ganadorId, esFinalizada,board
     )
 }
 
