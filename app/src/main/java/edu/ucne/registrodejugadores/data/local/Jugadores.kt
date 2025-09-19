@@ -9,7 +9,7 @@ import edu.ucne.registrodejugadores.data.local.entity.PartidaEntity
 
 @Database(
     entities = [JugadorEntity::class, PartidaEntity::class],
-    version = 2,
+    version = 4,
     exportSchema = false
 )
 abstract class Jugadores : RoomDatabase() {
