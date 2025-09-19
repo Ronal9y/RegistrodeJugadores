@@ -10,17 +10,62 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
-
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
-)
+import androidx.compose.ui.graphics.Color
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary = Color(0xFF006A65),
+    onPrimary = Color(0xFFFFFFFF),
+    primaryContainer = Color(0xFF73F8EE),
+    onPrimaryContainer = Color(0xFF00201E),
+    secondary = Color(0xFF4A6360),
+    onSecondary = Color(0xFFFFFFFF),
+    secondaryContainer = Color(0xFFCCE8E3),
+    onSecondaryContainer = Color(0xFF05201D),
+    tertiary = Color(0xFF49607B),
+    onTertiary = Color(0xFFFFFFFF),
+    tertiaryContainer = Color(0xFFD1E4FF),
+    onTertiaryContainer = Color(0xFF021D34),
+    error = Color(0xFFBA1A1A),
+    onError = Color(0xFFFFFFFF),
+    errorContainer = Color(0xFFFFDAD6),
+    onErrorContainer = Color(0xFF410002),
+    background = Color(0xFFFAFDFB),
+    onBackground = Color(0xFF191C1C),
+    surface = Color(0xFFFAFDFB),
+    onSurface = Color(0xFF191C1C),
+    surfaceVariant = Color(0xFFDAE5E2),
+    onSurfaceVariant = Color(0xFF3F4947),
+    outline = Color(0xFF6F7977),
+    outlineVariant = Color(0xFFBEC9C6),
+    scrim = Color(0xFF000000),
+)
+private val DarkColorScheme = darkColorScheme(
+    primary = Color(0xFF52DBD0),
+    onPrimary = Color(0xFF003734),
+    primaryContainer = Color(0xFF00504B),
+    onPrimaryContainer = Color(0xFF73F8EE),
+    secondary = Color(0xFFB1CCC7),
+    onSecondary = Color(0xFF1C3532),
+    secondaryContainer = Color(0xFF334B48),
+    onSecondaryContainer = Color(0xFFCCE8E3),
+    tertiary = Color(0xFFB1C8E8),
+    onTertiary = Color(0xFF1A324D),
+    tertiaryContainer = Color(0xFF314865),
+    onTertiaryContainer = Color(0xFFD1E4FF),
+    error = Color(0xFFFFB4AB),
+    onError = Color(0xFF690005),
+    errorContainer = Color(0xFF93000A),
+    onErrorContainer = Color(0xFFFFDAD6),
+    background = Color(0xFF191C1C),
+    onBackground = Color(0xFFE0E3E1),
+    surface = Color(0xFF191C1C),
+    onSurface = Color(0xFFE0E3E1),
+    surfaceVariant = Color(0xFF3F4947),
+    onSurfaceVariant = Color(0xFFBEC9C6),
+    outline = Color(0xFF889391),
+    outlineVariant = Color(0xFF3F4947),
+    scrim = Color(0xFF000000),
+)
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
@@ -31,7 +76,7 @@ private val LightColorScheme = lightColorScheme(
     onBackground = Color(0xFF1C1B1F),
     onSurface = Color(0xFF1C1B1F),
     */
-)
+
 
 @Composable
 fun RegistrodeJugadoresTheme(
