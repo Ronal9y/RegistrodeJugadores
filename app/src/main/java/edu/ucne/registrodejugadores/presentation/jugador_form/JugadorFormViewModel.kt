@@ -1,4 +1,4 @@
-package edu.ucne.registrodejugadores.ui.theme.screen.jugador_form
+package edu.ucne.registrodejugadores.presentation.jugador_form
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
