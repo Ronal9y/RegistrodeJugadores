@@ -90,4 +90,14 @@ dependencies {
 
     // Iconos de Material
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
+
+    //Material3
+    implementation("androidx.compose.material3:material3:1.3.2")
+    implementation("androidx.compose.material3:material3-window-size-class:1.2.1")
+    implementation("androidx.compose.material:material-icons-extended:1.6.4")
+
+    //Timber
+    implementation("com.jakewharton.timber:timber:5.0.1")
+    //Lottie
+    implementation("com.airbnb.android:lottie:6.6.9")
 }

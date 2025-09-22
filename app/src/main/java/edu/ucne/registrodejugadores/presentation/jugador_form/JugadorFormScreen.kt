@@ -1,4 +1,4 @@
-package edu.ucne.registrodejugadores.ui.screen.jugador_form
+package edu.ucne.registrodejugadores.presentation.jugador_form
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -8,8 +8,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import edu.ucne.registrodejugadores.ui.theme.screen.jugador_form.JugadorFormEvent
-import edu.ucne.registrodejugadores.ui.theme.screen.jugador_form.JugadorFormViewModel
+import edu.ucne.registrodejugadores.presentation.jugador_form.JugadorFormEvent
+import edu.ucne.registrodejugadores.presentation.jugador_form.JugadorFormViewModel
 import edu.ucne.registrodejugadores.ui.theme.util.UiEvent
 
 @OptIn(ExperimentalMaterial3Api::class)

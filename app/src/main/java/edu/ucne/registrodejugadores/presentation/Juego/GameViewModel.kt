@@ -1,4 +1,4 @@
-package edu.ucne.registrodejugadores.ui.theme.screen.Juego
+package edu.ucne.registrodejugadores.presentation.Juego
 
 import android.util.Log
 import androidx.compose.runtime.getValue
@@ -25,6 +25,12 @@ class GameViewModel @Inject constructor(
 
     var lastPlayer: Player? = null
         private set
+
+    fun loadBoard(csv: String) {
+        _state.value = GameState(board = csv.toPlayerArray())
+    }
+
+    fun getBoardCsv(): String = state.value.board.toCsv()
 
     fun incrementarPartidas(jugadorId: Int?) {
         if (jugadorId == null || jugadorId <= 0) return
@@ -90,6 +96,7 @@ class GameViewModel @Inject constructor(
                 Log.d("GameViewModel", "Juego reiniciado")
             }
         }
+
     }
 
     private fun checkWin(board: Array<Player?>, player: Player): Boolean {
@@ -117,6 +124,14 @@ class GameViewModel @Inject constructor(
         return winPatterns.entries.firstOrNull { (pattern, _) -> pattern.all { board[it] == player } }?.value
     }
 }
+
+fun Array<Player?>.toCsv(): String =
+    joinToString(",") { it?.name ?: "null" }
+
+fun String.toPlayerArray(): Array<Player?> =
+    split(",").map { if (it == "null") null else Player.valueOf(it) }.toTypedArray()
+
+
 
 data class GameState(
     val board: Array<Player?> = arrayOfNulls(9),

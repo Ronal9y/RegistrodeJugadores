@@ -1,4 +1,4 @@
-package edu.ucne.registrodejugadores.ui.screen.juego
+package edu.ucne.registrodejugadores.presentation.juego
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import edu.ucne.registrodejugadores.domain.model.Jugador
-import edu.ucne.registrodejugadores.ui.screen.jugador_list.JugadorListViewModel
+import edu.ucne.registrodejugadores.presentation.jugador_list.JugadorListViewModel
 import edu.ucne.registrodejugadores.ui.theme.util.Routes
 
 @Composable
