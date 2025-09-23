@@ -9,10 +9,13 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import edu.ucne.registrodejugadores.data.local.database.Jugadores
 import edu.ucne.registrodejugadores.data.local.dao.JugadorDao
+import edu.ucne.registrodejugadores.data.local.dao.LogroDao
 import edu.ucne.registrodejugadores.data.local.dao.PartidaDao
 import edu.ucne.registrodejugadores.data.repository.JugadorRepositoryImpl
+import edu.ucne.registrodejugadores.data.repository.LogroRepositoryImpl
 import edu.ucne.registrodejugadores.data.repository.PartidaRepositoryImpl
 import edu.ucne.registrodejugadores.domain.repository.JugadorRepository
+import edu.ucne.registrodejugadores.domain.repository.LogroRepository
 import edu.ucne.registrodejugadores.domain.repository.PartidaRepository
 import javax.inject.Singleton
 
@@ -46,6 +49,12 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideLogroDao(database: Jugadores): LogroDao {
+        return database.logroDao()
+    }
+
+    @Provides
+    @Singleton
     fun provideJugadorRepository(dao: JugadorDao): JugadorRepository {
         return JugadorRepositoryImpl(dao)
     }
@@ -55,4 +64,11 @@ object AppModule {
     fun providePartidaRepository(dao: PartidaDao): PartidaRepository {
         return PartidaRepositoryImpl(dao)
     }
+
+    @Provides
+    @Singleton
+    fun provideLogroRepository(dao: LogroDao): LogroRepository{
+        return LogroRepositoryImpl(dao)
+    }
+
 }
