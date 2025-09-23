@@ -6,4 +6,6 @@ object Routes {
     const val SELECCION_JUGADORES = "seleccion_jugadores"
     const val GAME_SCREEN = "game_screen"
     const val PARTIDAS_SCREEN = "partidas_screen"
+
+    const val LOGROS_LIST = "logros_list"
 }
