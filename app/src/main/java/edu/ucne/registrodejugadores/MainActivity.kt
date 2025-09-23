@@ -8,6 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.PersonAdd
@@ -31,6 +32,7 @@ import edu.ucne.registrodejugadores.presentation.jugador_list.JugadorListScreen
 import edu.ucne.registrodejugadores.presentation.partidas_screen.PartidasScreen
 import edu.ucne.registrodejugadores.ui.theme.RegistrodeJugadoresTheme
 import edu.ucne.registrodejugadores.presentation.Juego.GameScreen
+import edu.ucne.registrodejugadores.presentation.Logros_List.LogrosListScreen
 import edu.ucne.registrodejugadores.ui.theme.util.Routes
 
 @AndroidEntryPoint
@@ -72,6 +74,12 @@ class MainActivity : ComponentActivity() {
                                     label = { Text("Historial") },
                                     selected = currentDestination == Routes.PARTIDAS_SCREEN,
                                     onClick = { navController.navigate(Routes.PARTIDAS_SCREEN) }
+                                )
+                                NavigationBarItem(
+                                    icon = { Icon(Icons.Default.EmojiEvents, contentDescription = "Logros") },
+                                    label = { Text("Logros") },
+                                    selected = currentDestination == Routes.LOGROS_LIST,
+                                    onClick = { navController.navigate(Routes.LOGROS_LIST) }
                                 )
                             }
                         }
@@ -140,6 +148,9 @@ class MainActivity : ComponentActivity() {
                                     navController.navigate("${Routes.GAME_SCREEN}?partidaId=$partidaId")
                                 }
                             )
+                        }
+                        composable(Routes.LOGROS_LIST) {
+                            LogrosListScreen()
                         }
                     }
                 }
