@@ -3,15 +3,16 @@ package edu.ucne.registrodejugadores.presentation.Juego
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExitToApp
-import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -31,12 +32,18 @@ fun GameScreen(
     onExitGame: () -> Unit,
     gameViewModel: GameViewModel = hiltViewModel(),
     jugadorViewModel: JugadorListViewModel = hiltViewModel(),
-    partidaViewModel: PartidasViewModel = hiltViewModel()
+    partidaViewModel: PartidasViewModel = hiltViewModel(),
+    movimientosViewModel: MovimientosViewModel = hiltViewModel()
 ) {
     val state by gameViewModel.state.collectAsState()
     val jugadores by jugadorViewModel.jugadores.collectAsState(emptyList())
     val partidas by partidaViewModel.partidas.collectAsState(emptyList())
     val lastSavedPartidaId by partidaViewModel.lastSavedPartidaId.collectAsState()
+    val movimientosState by movimientosViewModel.movimientos.collectAsState()
+
+    // Estado para el buscador
+    var partidaBuscada by remember { mutableStateOf("") }
+    var mostrarBuscador by remember { mutableStateOf(false) }
 
     var partidaActual by remember { mutableStateOf<Partida?>(null) }
     var partidaCargada by remember { mutableStateOf(false) }
@@ -49,8 +56,57 @@ fun GameScreen(
         jugadores.find { it.id == jugadorOId }
     }
 
+    // Cargar movimientos desde API cuando se selecciona una partida
+    LaunchedEffect(partidaActual) {
+        partidaActual?.partidaId?.let { id ->
+            if (id > 0) {
+                movimientosViewModel.cargarMovimientos(id)
+            }
+        }
+    }
+
+    // Sincroniza el tablero con movimientos de API
+    LaunchedEffect(movimientosState) {
+        when (movimientosState) {
+            is edu.ucne.registrodejugadores.data.remote.Resource.Success -> {
+                val movimientos = (movimientosState as edu.ucne.registrodejugadores.data.remote.Resource.Success<List<edu.ucne.registrodejugadores.domain.model.Movimiento>>).data
+                if (movimientos?.isNotEmpty() == true) { // Cambio aquí: usar safe call
+                    gameViewModel.cargarMovimientosDesdeAPI(movimientos)
+                }
+            }
+            else -> {}
+        }
+    }
+
+    // Guarda movimientos en API cuando se hace un movimiento
     LaunchedEffect(state.board) {
         if (partidaActual != null && !state.hasWon && !state.isDraw) {
+            // Encontrar el último movimiento realizado
+            state.lastPlayer?.let { jugador ->
+                // Buscar la celda que cambió en el último movimiento
+                val currentBoard = state.board
+                val previousBoard = gameViewModel.getPreviousBoard()
+
+                if (previousBoard != null) {
+                    for (i in currentBoard.indices) {
+                        if (currentBoard[i] != previousBoard[i] && currentBoard[i] == jugador) {
+                            val fila = i / 3
+                            val columna = i % 3
+                            scope.launch {
+                                movimientosViewModel.guardarMovimiento(
+                                    partidaId = partidaActual!!.partidaId,
+                                    jugador = if (jugador == Player.X) "X" else "O",
+                                    fila = fila,
+                                    columna = columna
+                                )
+                            }
+                            break
+                        }
+                    }
+                }
+            }
+
+            // Guardar estado local de la partida
             val partidaActualizada = partidaActual!!.copy(
                 board = gameViewModel.getBoardCsv(),
                 esFinalizada = false
@@ -58,6 +114,7 @@ fun GameScreen(
             partidaViewModel.onEvent(PartidaEvent.OnSavePartida(partidaActualizada))
         }
     }
+
 
     LaunchedEffect(lastSavedPartidaId) {
         lastSavedPartidaId?.let { id ->
@@ -106,7 +163,6 @@ fun GameScreen(
                         board = gameViewModel.getBoardCsv()
                     )
                     partidaViewModel.onEvent(PartidaEvent.OnSavePartida(nuevaPartida))
-
                 }
                 partidaCargada = true
             }
@@ -184,7 +240,17 @@ fun GameScreen(
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary
-                )
+                ),
+                actions = {
+                    IconButton(
+                        onClick = { mostrarBuscador = !mostrarBuscador }
+                    ) {
+                        Icon(
+                            if (mostrarBuscador) Icons.Default.Close else Icons.Default.Search,
+                            contentDescription = if (mostrarBuscador) "Cerrar buscador" else "Buscar partida"
+                        )
+                    }
+                }
             )
         }
     ) { innerPadding ->
@@ -197,6 +263,122 @@ fun GameScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
+            // BUSCADOR DE PARTIDAS
+            if (mostrarBuscador) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            "Buscar Partida por ID",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            OutlinedTextField(
+                                value = partidaBuscada,
+                                onValueChange = { partidaBuscada = it },
+                                label = { Text("ID de Partida") },
+                                placeholder = { Text("Ingresa el ID de la partida") },
+                                modifier = Modifier.weight(1f),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                singleLine = true
+                            )
+
+                            IconButton(
+                                onClick = {
+                                    partidaBuscada.toIntOrNull()?.let { id ->
+                                        scope.launch {
+                                            val partida = partidaViewModel.getPartidaById(id)
+                                            if (partida != null) {
+                                                partidaActual = partida
+                                                gameViewModel.loadBoard(partida.board)
+                                                movimientosViewModel.cargarMovimientos(id)
+                                                mostrarBuscador = false
+                                            }
+                                        }
+                                    }
+                                },
+                                enabled = partidaBuscada.isNotBlank()
+                            ) {
+                                Icon(Icons.Default.Search, contentDescription = "Buscar")
+                            }
+
+                            IconButton(
+                                onClick = {
+                                    partidaBuscada = ""
+                                    movimientosViewModel.limpiarMovimientos()
+                                }
+                            ) {
+                                Icon(Icons.Default.Refresh, contentDescription = "Limpiar")
+                            }
+                        }
+
+                        // Mostrar estado de carga de movimientos
+                        when (movimientosState) {
+                            is edu.ucne.registrodejugadores.data.remote.Resource.Loading -> {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.Center,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    CircularProgressIndicator(modifier = Modifier.size(16.dp))
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        "Cargando movimientos...",
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+                            }
+                            is edu.ucne.registrodejugadores.data.remote.Resource.Error -> {
+                                Text(
+                                    "Error: ${(movimientosState as edu.ucne.registrodejugadores.data.remote.Resource.Error<List<edu.ucne.registrodejugadores.domain.model.Movimiento>>).message}",
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                            is edu.ucne.registrodejugadores.data.remote.Resource.Success -> {
+                                val movimientos = (movimientosState as edu.ucne.registrodejugadores.data.remote.Resource.Success<List<edu.ucne.registrodejugadores.domain.model.Movimiento>>).data
+                                Text(
+                                    "${movimientos?.size ?: 0} movimientos cargados", // Cambio aquí: safe call
+                                    color = MaterialTheme.colorScheme.primary,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                            else -> {}
+                        }
+
+
+                        // Información de la partida actual
+                        partidaActual?.let { partida ->
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Divider()
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                "Partida #${partida.partidaId}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                "Estado: ${if (partida.esFinalizada) "Finalizada" else "En curso"}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
             PuntuacionRow(state, jugadorX, jugadorO)
             TableroJuego(state, gameViewModel)
             MensajeTurno(state, jugadorX, jugadorO)
@@ -216,7 +398,6 @@ fun GameScreen(
         }
     }
 }
-
 
 @Composable
 private fun PuntuacionRow(state: GameState, jugadorX: Jugador, jugadorO: Jugador) {
@@ -401,7 +582,6 @@ private fun BotonesJuego(
             Spacer(modifier = Modifier.width(8.dp))
             Text("Salir", fontWeight = FontWeight.SemiBold)
         }
-
 
         Button(
             onClick = { gameViewModel.onAction(GameAction.PlayAgain) },
