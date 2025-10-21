@@ -53,6 +53,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.foundation)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -100,4 +101,26 @@ dependencies {
     implementation("com.jakewharton.timber:timber:5.0.1")
     //Lottie
     implementation("com.airbnb.android:lottie:6.6.9")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+
+    // Retrofit (Cliente HTTP)
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    // Conversor para Kotlinx Serialization
+    implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
+    // OkHttp (Cliente HTTP subyacente)
+    implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.14")
+    // Logging interceptor (para ver peticiones/respuestas)
+    implementation("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.14")
+
+    // --- Kotlin Serialization ---
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+
+    // --- Moshi (JSON) ---
+    implementation("com.squareup.moshi:moshi:1.15.1")
+    implementation("com.squareup.moshi:moshi-kotlin:1.15.1")
+    implementation("com.squareup.retrofit2:converter-moshi:2.11.0")
+
+    // Para recyclerview
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
 }

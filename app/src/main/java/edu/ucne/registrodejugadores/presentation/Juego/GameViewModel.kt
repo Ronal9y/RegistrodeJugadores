@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.ucne.registrodejugadores.domain.model.Jugador
+import edu.ucne.registrodejugadores.domain.model.Movimiento
 import edu.ucne.registrodejugadores.domain.repository.JugadorRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,12 +21,16 @@ class GameViewModel @Inject constructor(
     private val repository: JugadorRepository
 ) : ViewModel() {
 
+    private var previousBoard: Array<Player?> = arrayOfNulls(9)
     private val _state = MutableStateFlow(GameState())
     val state: StateFlow<GameState> = _state.asStateFlow()
 
     var lastPlayer: Player? = null
         private set
 
+    fun getPreviousBoard(): Array<Player?>? {
+        return previousBoard.copyOf()
+    }
     fun loadBoard(csv: String) {
         _state.value = GameState(board = csv.toPlayerArray())
     }
@@ -50,11 +55,26 @@ class GameViewModel @Inject constructor(
         }
     }
 
+    fun cargarMovimientosDesdeAPI(movimientos: List<Movimiento>) {
+        val nuevoTablero = arrayOfNulls<Player>(9)
+
+        movimientos.forEach { movimiento ->
+            val indice = movimiento.posicionFila * 3 + movimiento.posicionColumna
+            if (indice in 0..8) {
+                nuevoTablero[indice] = if (movimiento.jugador == "X") Player.X else Player.O
+            }
+        }
+
+        _state.value = _state.value.copy(board = nuevoTablero)
+    }
+
+
     fun onAction(action: GameAction) {
         when (action) {
             is GameAction.BoardTapped -> {
                 val currentState = _state.value
                 if (currentState.board[action.cell] == null && !currentState.hasWon && !currentState.isDraw) {
+                    previousBoard = currentState.board.copyOf()
                     val newBoard = currentState.board.copyOf()
                     newBoard[action.cell] = currentState.currentPlayer
 
