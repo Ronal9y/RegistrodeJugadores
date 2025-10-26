@@ -10,6 +10,7 @@ import dagger.hilt.components.SingletonComponent
 import edu.ucne.registrodejugadores.data.local.database.Jugadores
 import edu.ucne.registrodejugadores.data.local.dao.JugadorDao
 import edu.ucne.registrodejugadores.data.local.dao.LogroDao
+import edu.ucne.registrodejugadores.data.local.dao.MovimientoDao
 import edu.ucne.registrodejugadores.data.local.dao.PartidaDao
 import edu.ucne.registrodejugadores.data.repository.JugadorRepositoryImpl
 import edu.ucne.registrodejugadores.data.repository.LogroRepositoryImpl
@@ -31,7 +32,7 @@ object AppModule {
             Jugadores::class.java,
             "jugadoresDb"
         )
-            .fallbackToDestructiveMigration()
+            .fallbackToDestructiveMigration(false)
             .build()
     }
 
@@ -51,6 +52,12 @@ object AppModule {
     @Singleton
     fun provideLogroDao(database: Jugadores): LogroDao {
         return database.logroDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideMovimientoDao(database: Jugadores): MovimientoDao {
+        return database.movimientoDao()
     }
 
     @Provides
