@@ -1,18 +1,17 @@
 package edu.ucne.registrodejugadores.presentation.Juego
 
 import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import edu.ucne.registrodejugadores.data.remote.Resource
 import edu.ucne.registrodejugadores.domain.model.Jugador
 import edu.ucne.registrodejugadores.domain.model.Movimiento
 import edu.ucne.registrodejugadores.domain.repository.JugadorRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -31,8 +30,9 @@ class GameViewModel @Inject constructor(
     fun getPreviousBoard(): Array<Player?>? {
         return previousBoard.copyOf()
     }
+
     fun loadBoard(csv: String) {
-        _state.value = GameState(board = csv.toPlayerArray())
+        _state.update { it.copy(board = csv.toPlayerArray()) }
     }
 
     fun getBoardCsv(): String = state.value.board.toCsv()
@@ -47,10 +47,17 @@ class GameViewModel @Inject constructor(
                     repository.incrementarPartidas(jugadorId)
                     Log.d("GameViewModel", "Partidas incrementadas para jugador ID: $jugadorId")
                 } else {
-                    Log.w("GameViewModel", "Jugador con ID $jugadorId no encontrado. No se incrementarán partidas.")
+                    Log.w(
+                        "GameViewModel",
+                        "Jugador con ID $jugadorId no encontrado. No se incrementarán partidas."
+                    )
                 }
             } catch (e: Exception) {
-                Log.e("GameViewModel", "Error al incrementar partidas para jugador ID: $jugadorId", e)
+                Log.e(
+                    "GameViewModel",
+                    "Error al incrementar partidas para jugador ID: $jugadorId",
+                    e
+                )
             }
         }
     }
@@ -65,9 +72,8 @@ class GameViewModel @Inject constructor(
             }
         }
 
-        _state.value = _state.value.copy(board = nuevoTablero)
+        _state.update { it.copy(board = nuevoTablero) }
     }
-
 
     fun onAction(action: GameAction) {
         when (action) {
@@ -88,35 +94,46 @@ class GameViewModel @Inject constructor(
                         currentPlayer = if (currentState.currentPlayer == Player.X) Player.O else Player.X,
                         hasWon = hasWon,
                         isDraw = isDraw,
-                        winLine = if (hasWon) getWinLine(newBoard, currentState.currentPlayer) else null
+                        winLine = if (hasWon) getWinLine(
+                            newBoard,
+                            currentState.currentPlayer
+                        ) else null
                     )
 
-                    _state.value = newState
+                    _state.update {
+                        if (hasWon) {
+                            when (currentState.currentPlayer) {
+                                Player.X -> newState.copy(xScore = newState.xScore + 1)
+                                Player.O -> newState.copy(oScore = newState.oScore + 1)
+                                else -> newState
+                            }
+                        } else if (isDraw) {
+                            newState.copy(drawScore = newState.drawScore + 1)
+                        } else {
+                            newState
+                        }
+                    }
 
                     if (hasWon) {
-                        _state.value = when (currentState.currentPlayer) {
-                            Player.X -> newState.copy(xScore = newState.xScore + 1)
-                            Player.O -> newState.copy(oScore = newState.oScore + 1)
-                            else -> newState
-                        }
                         Log.i("GameViewModel", "¡Jugador ${currentState.currentPlayer} ha ganado!")
                     } else if (isDraw) {
-                        _state.value = newState.copy(drawScore = newState.drawScore + 1)
                         Log.i("GameViewModel", "¡Empate!")
                     }
                 }
             }
+
             GameAction.PlayAgain -> {
                 val currentState = _state.value
-                _state.value = GameState(
-                    xScore = currentState.xScore,
-                    oScore = currentState.oScore,
-                    drawScore = currentState.drawScore
-                )
+                _state.update {
+                    GameState(
+                        xScore = currentState.xScore,
+                        oScore = currentState.oScore,
+                        drawScore = currentState.drawScore
+                    )
+                }
                 Log.d("GameViewModel", "Juego reiniciado")
             }
         }
-
     }
 
     private fun checkWin(board: Array<Player?>, player: Player): Boolean {
@@ -150,8 +167,6 @@ fun Array<Player?>.toCsv(): String =
 
 fun String.toPlayerArray(): Array<Player?> =
     split(",").map { if (it == "null") null else Player.valueOf(it) }.toTypedArray()
-
-
 
 data class GameState(
     val board: Array<Player?> = arrayOfNulls(9),
