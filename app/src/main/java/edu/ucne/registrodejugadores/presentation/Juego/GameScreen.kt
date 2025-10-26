@@ -16,6 +16,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import edu.ucne.registrodejugadores.data.remote.Resource
 import edu.ucne.registrodejugadores.domain.model.Jugador
 import edu.ucne.registrodejugadores.domain.model.Partida
 import edu.ucne.registrodejugadores.presentation.jugador_list.JugadorListViewModel
@@ -39,7 +40,7 @@ fun GameScreen(
     val jugadores by jugadorViewModel.jugadores.collectAsState(emptyList())
     val partidas by partidaViewModel.partidas.collectAsState(emptyList())
     val lastSavedPartidaId by partidaViewModel.lastSavedPartidaId.collectAsState()
-    val movimientosState by movimientosViewModel.movimientos.collectAsState()
+    val movimientosState by movimientosViewModel.state.collectAsState()
 
     // Estado para el buscador
     var partidaBuscada by remember { mutableStateOf("") }
@@ -67,14 +68,9 @@ fun GameScreen(
 
     // Sincroniza el tablero con movimientos de API
     LaunchedEffect(movimientosState) {
-        when (movimientosState) {
-            is edu.ucne.registrodejugadores.data.remote.Resource.Success -> {
-                val movimientos = (movimientosState as edu.ucne.registrodejugadores.data.remote.Resource.Success<List<edu.ucne.registrodejugadores.domain.model.Movimiento>>).data
-                if (movimientos?.isNotEmpty() == true) { // Cambio aquí: usar safe call
-                    gameViewModel.cargarMovimientosDesdeAPI(movimientos)
-                }
-            }
-            else -> {}
+        val movimientos = movimientosState.movimientos
+        if (movimientos.isNotEmpty()) {
+            gameViewModel.cargarMovimientosDesdeAPI(movimientos)
         }
     }
 
@@ -114,7 +110,6 @@ fun GameScreen(
             partidaViewModel.onEvent(PartidaEvent.OnSavePartida(partidaActualizada))
         }
     }
-
 
     LaunchedEffect(lastSavedPartidaId) {
         lastSavedPartidaId?.let { id ->
@@ -298,12 +293,15 @@ fun GameScreen(
                                 onClick = {
                                     partidaBuscada.toIntOrNull()?.let { id ->
                                         scope.launch {
-                                            val partida = partidaViewModel.getPartidaById(id)
-                                            if (partida != null) {
-                                                partidaActual = partida
-                                                gameViewModel.loadBoard(partida.board)
+
+                                            val partidaLocal = partidaViewModel.getPartidaById(id)
+                                            if (partidaLocal != null) {
+                                                partidaActual = partidaLocal
+                                                gameViewModel.loadBoard(partidaLocal.board)
                                                 movimientosViewModel.cargarMovimientos(id)
                                                 mostrarBuscador = false
+                                            } else {
+
                                             }
                                         }
                                     }
@@ -323,42 +321,37 @@ fun GameScreen(
                             }
                         }
 
-                        // Mostrar estado de carga de movimientos
-                        when (movimientosState) {
-                            is edu.ucne.registrodejugadores.data.remote.Resource.Loading -> {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.Center,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    CircularProgressIndicator(modifier = Modifier.size(16.dp))
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        "Cargando movimientos...",
-                                        style = MaterialTheme.typography.bodySmall
-                                    )
-                                }
-                            }
-                            is edu.ucne.registrodejugadores.data.remote.Resource.Error -> {
+                        if (movimientosState.isLoading) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                CircularProgressIndicator(modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    "Error: ${(movimientosState as edu.ucne.registrodejugadores.data.remote.Resource.Error<List<edu.ucne.registrodejugadores.domain.model.Movimiento>>).message}",
-                                    color = MaterialTheme.colorScheme.error,
+                                    "Cargando movimientos...",
                                     style = MaterialTheme.typography.bodySmall
                                 )
                             }
-                            is edu.ucne.registrodejugadores.data.remote.Resource.Success -> {
-                                val movimientos = (movimientosState as edu.ucne.registrodejugadores.data.remote.Resource.Success<List<edu.ucne.registrodejugadores.domain.model.Movimiento>>).data
-                                Text(
-                                    "${movimientos?.size ?: 0} movimientos cargados", // Cambio aquí: safe call
-                                    color = MaterialTheme.colorScheme.primary,
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                            }
-                            else -> {}
                         }
 
+                        movimientosState.error?.let { error ->
+                            Text(
+                                "Error: $error",
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
 
-                        // Información de la partida actual
+                        if (movimientosState.movimientos.isNotEmpty()) {
+                            Text(
+                                "${movimientosState.movimientos.size} movimientos cargados",
+                                color = MaterialTheme.colorScheme.primary,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+
                         partidaActual?.let { partida ->
                             Spacer(modifier = Modifier.height(8.dp))
                             Divider()
@@ -479,6 +472,7 @@ private fun TableroJuego(state: GameState, gameViewModel: GameViewModel) {
                 .padding(10.dp),
             contentAlignment = Alignment.Center
         ) {
+
             GameBoard(
                 board = state.board,
                 onCellClicked = { cell ->
